@@ -52,10 +52,12 @@ class Game extends React.Component {
 						history :  [{ squares : Array(9).fill(null) , lastMove : ''}],
 						xIsNext : true,
 						stepNumber : 0,
+						reverseSorted : false
 				};
 		}
 
-		jumpTo(step){
+		jumpTo(move){
+				const step = this.state.history.indexOf(move);
 				this.setState({
 						stepNumber : step,
 						xIsNext : (step % 2) === 0
@@ -77,17 +79,24 @@ class Game extends React.Component {
 				});
 		}
 
+		toggleSort(){
+				this.setState({
+						reverseSorted:!this.state.reverseSorted
+				});
+		}
+
 		render() {
 				const history = this.state.history;
+				const movesHistory = this.state.reverseSorted ? this.state.history.slice(0).reverse() : this.state.history;
 				const current = history[this.state.stepNumber];
 				const winner = calculateWinner(current.squares);
 
-				const moves = history.map((move, step) => {
-						const desc = (step ? 
-								"Go to move " + move.lastMove: "Start");
+				const moves = movesHistory.map((move, step) => {
+						const desc = (move.lastMove ?  "Go to move " + move.lastMove: "Start");
+						const isSelectedStep = this.state.reverseSorted ? step === history.length - this.state.stepNumber - 1 : step === this.state.stepNumber;
 						return (
 								<li key={move}>
-										<button className={this.state.stepNumber===step ? 'bold' : ''} onClick={() => this.jumpTo(step)}> {desc} </button>
+										<button className={isSelectedStep ? 'bold' : ''} onClick={() => this.jumpTo(move)}> {desc} </button>
 								</li>
 								);
 				});
@@ -109,7 +118,8 @@ class Game extends React.Component {
 								</div>
 								<div className="game-info">
 										<div>{status}</div>
-										<ol>{moves}</ol>
+										<button onClick={() => this.toggleSort()}>Reverse order</button>
+										<ol reversed={this.state.reverseSorted}>{moves}</ol>
 								</div>
 						</div>
 						);
